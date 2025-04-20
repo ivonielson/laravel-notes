@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MainController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Middleware\CheckIsLogged;
 use App\Http\Middleware\CheckIsNotLogged;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,8 @@ Route::middleware([CheckIsLogged::class])->group(function () {
 // logout
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
+    Route::get('/log', [AuditLogController::class, 'index'])->name('audit_log');
+    Route::get('/logshow/{id}', [AuditLogController::class, 'show'])->name('audit_log_show');
 
 });
 

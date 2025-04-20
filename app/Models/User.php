@@ -12,4 +12,11 @@ class User extends Model
     {
         return $this->hasMany(Note::class);
     }
+
+    // app/Models/User.php
+
+    public function auditLogs()
+    {
+        return $this->hasMany(\App\Models\AuditLog::class, 'user_id');
+    }
 }

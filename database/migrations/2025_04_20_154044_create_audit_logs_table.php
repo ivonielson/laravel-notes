@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             $table->string('action'); // view, create, edit, delete
+            $table->string('view_type')->nullable();
             $table->string('model'); // Nome da model (ex: Projeto)
             $table->unsignedBigInteger('model_id')->nullable();
             $table->ipAddress('ip_address')->nullable();
+            $table->json('user_agent')->nullable();
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();
             $table->timestamps();

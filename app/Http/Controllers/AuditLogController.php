@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\AuditLogger;
 
 class AuditLogController extends Controller
 {
@@ -52,12 +53,20 @@ class AuditLogController extends Controller
                 ->get()
         ];
 
+        AuditLogger::logCollectionView(
+            AuditLog::class,
+            $logs->count()
+        );
+
         return view('audit_logs.index', compact('logs', 'stats'));
     }
 
     public function show($id)
     {
         $log = AuditLog::with('user')->findOrFail($id);
+        AuditLogger::log('view', AuditLog::class, $log->id, null, [
+            'log_id_visualizado' => $log->id
+        ]);
 
         return view('audit_logs.show', compact('log'));
     }

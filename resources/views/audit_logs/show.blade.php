@@ -3,6 +3,7 @@
 @section('content')
     <div class="container mt-5">
         <div class="row justify-content-center">
+            @include('top_bar')
             <div class="col">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">

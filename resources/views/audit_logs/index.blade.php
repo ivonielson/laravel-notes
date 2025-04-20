@@ -4,7 +4,7 @@
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col">
-
+                @include('top_bar')
                 <!-- Filtros -->
                 <div class="card mb-4">
                     <div class="card-body">

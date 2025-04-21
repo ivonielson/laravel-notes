@@ -11,9 +11,6 @@ class AuthController extends Controller
 {
     public function login()
     {
-        // AuditLogger::log('view', 'Auth', null, null, [
-        //     'page' => 'login_form'
-        // ]);
 
         return view('login');
     }
@@ -78,11 +75,12 @@ class AuthController extends Controller
             'user' => [
                 'id' => $user->id,
                 'username' => $user->username,
+                'role' => $user->role,
             ]
         ]);
 
         // Log de login bem-sucedido
-        AuditLogger::log('login', 'User', $user->id, null, [
+        AuditLogger::log('login', get_class($user), $user->id, null, [
             'status' => 'success',
             'ip' => $request->ip(),
             'user_agent' => $request->userAgent()
@@ -96,8 +94,9 @@ class AuthController extends Controller
     public function logout()
     {
         $userId = session('user.id') ?? null;
+        $user = $userId ? User::find($userId) : null;
 
-        AuditLogger::log('logout', 'User', $userId, null, [
+        AuditLogger::log('logout', $user ? get_class($user) : 'User', $userId, null, [
             'ip' => request()->ip(),
             'user_agent' => request()->userAgent()
         ]);

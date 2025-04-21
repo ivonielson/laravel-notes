@@ -41,7 +41,7 @@ class MainController extends Controller
         //     'form_type' => 'create'
         // ]);
 
-        return view('new_Note');
+        return view('note.new_Note');
     }
 
     public function newNoteSubmit(Request $request)
@@ -92,7 +92,7 @@ class MainController extends Controller
             // Log de visualização para edição
             // AuditLogger::logView($note, 'edit_form');
 
-            return view('edit_Note', ['note' => $note]);
+            return view('note.edit_Note', ['note' => $note]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             // AuditLogger::log('error', 'Note', $id, null, [
             //     'action' => 'view_edit',
@@ -173,7 +173,7 @@ class MainController extends Controller
             // Log de visualização para exclusão
             // AuditLogger::logView($note, 'delete_confirmation');
 
-            return view('delete_note', compact('note'));
+            return view('note.delete_note', compact('note'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             // AuditLogger::log('error', 'Note', $id, null, [
             //     'action' => 'view_delete',

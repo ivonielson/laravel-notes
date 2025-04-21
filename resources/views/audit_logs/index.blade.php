@@ -1,10 +1,27 @@
 @extends('layouts.main_layout')
+@section('styles')
+    <style>
+        #actionChart {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
 
+        #actionChart:hover {
+            opacity: 0.9;
+        }
+
+        .chart-container {
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            padding: 10px;
+        }
+    </style>
+@endsection
 @section('content')
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col">
-                @include('top_bar')
+                @include('layouts/top_bar')
                 <!-- Filtros -->
                 <div class="card mb-4">
                     <div class="card-body">
@@ -38,6 +55,9 @@
                                     <label>Usuário</label>
                                     <select name="user_id" class="form-control">
                                         <option value="">Todos</option>
+                                        <option value="null" {{ request('user_id') === 'null' ? 'selected' : '' }}>
+                                            Anônimo ({{ $stats['null_user_count'] }})
+                                        </option>
                                         @foreach ($stats['users'] as $user)
                                             <option value="{{ $user->id }}"
                                                 {{ request('user_id') == $user->id ? 'selected' : '' }}>
@@ -88,6 +108,19 @@
 
                 </div>
 
+                <!-- Gráfico de Logs por Ação -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Distribuição de Logs por Ação</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container" style="position: relative; height:300px;">
+                            <canvas id="actionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+
                 <!-- Tabela de Logs -->
                 <div class="card">
                     <div class="card-body">
@@ -111,11 +144,11 @@
                                             <td>{{ $log->created_at->format('d/m/Y H:i:s') }}</td>
                                             <td>
                                                 @php
-                                                    $badgeClass = match($log->action) {
+                                                    $badgeClass = match ($log->action) {
                                                         'update' => 'info',
                                                         'delete' => 'danger',
                                                         'create' => 'success',
-                                                        default => 'warning'
+                                                        default => 'warning',
                                                     };
                                                 @endphp
                                                 <span class="badge bg-{{ $badgeClass }}">
@@ -123,7 +156,7 @@
                                                 </span>
                                             </td>
                                             <td>{{ class_basename($log->model) }}</td>
-                                            <td>{{ $log->user->username ?? 'Sistema' }}</td>
+                                            <td>{{ $log->user->username ?? 'Anônimo' }}</td>
                                             <td>{{ $log->ip_address ?? '-' }}</td>
                                             <td>
                                                 <a href="{{ route('audit_log_show', $log->id) }}"
@@ -150,4 +183,86 @@
             </div>
         </div>
     </div>
+
+    @section('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const ctx = document.getElementById('actionChart').getContext('2d');
+
+                // Preparar dados do gráfico
+                const actionData = @json(
+                    $stats['actions']->map(function ($item) {
+                        return [
+                            'action' => ucfirst($item->action),
+                            'total' => $item->total,
+                        ];
+                    }));
+
+                // Ordenar por total (opcional)
+                actionData.sort((a, b) => b.total - a.total);
+
+                // Cores para as barras
+                const backgroundColors = actionData.map(item => {
+                    switch (item.action.toLowerCase()) {
+                        case 'create':
+                            return 'rgba(40, 167, 69, 0.7)';
+                        case 'update':
+                            return 'rgba(23, 162, 184, 0.7)';
+                        case 'delete':
+                            return 'rgba(220, 53, 69, 0.7)';
+                        default:
+                            return 'rgba(108, 117, 125, 0.7)';
+                    }
+                });
+
+                const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+
+                // Criar o gráfico
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: actionData.map(item => item.action),
+                        datasets: [{
+                            label: 'Total de Logs',
+                            data: actionData.map(item => item.total),
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    precision: 0
+                                }
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw}`;
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        onClick: (e, elements) => {
+                            if (elements.length > 0) {
+                                const index = elements[0].index;
+                                const action = actionData[index].action.toLowerCase();
+                                window.location.href = `{{ route('audit_log') }}?action=${action}`;
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    @endsection
 @endsection

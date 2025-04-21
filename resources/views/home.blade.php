@@ -4,7 +4,7 @@
         <div class="row justify-content-center">
             <div class="col">
 
-                @include('top_bar')
+                @include('layouts/top_bar')
 
                 <!-- no notes available -->
                 @if (count($notes) == 0)
@@ -26,7 +26,7 @@
 
                     @foreach ($notes as $note)
 
-                    @include('note')
+                    @include('note/note')
 
                     @endforeach
                 @endif

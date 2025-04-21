@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" type="image/png">
     <!-- SweetAlert2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
+    @yield('styles')
 </head>
 
 <body>
@@ -25,6 +25,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="{{ asset('assets/bootstrap/bootstrap.bundle.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-3d@2.0.0/dist/chartjs-plugin-3d.min.js"></script>
 
     @if (session('success'))
         <script>
@@ -52,7 +54,7 @@
         </script>
     @endif
 
-
+    @yield('scripts')
 </body>
 
 </html>

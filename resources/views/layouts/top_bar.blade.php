@@ -28,9 +28,17 @@
                     </h6>
                 </li>
                 <li><hr class="dropdown-divider"></li>
+
+                @if(session('user.role') === 'admin')
+                    <li>
+                        <a class="dropdown-item" href="{{ route('audit_log') }}">
+                            <i class="fa-solid fa-clipboard-list me-2"></i> Logs de Auditoria
+                        </a>
+                    </li>
+                @endif
                 <li>
-                    <a class="dropdown-item" href="{{ route('audit_log') }}">
-                        <i class="fa-solid fa-clipboard-list me-2"></i> Logs de Auditoria
+                    <a class="dropdown-item" href="{{ route('user_list') }}">
+                        <i class="fa-solid fa-clipboard-list me-2"></i> Perfil
                     </a>
                 </li>
                 <li>

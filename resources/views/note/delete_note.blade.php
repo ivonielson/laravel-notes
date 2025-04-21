@@ -4,7 +4,8 @@
         <div class="row justify-content-center">
             <div class="col">
 
-                @include('top_bar')
+                @include('layouts/top_bar')
+
                 <!-- confirm delete -->
                 <div class="col card p-5 text-center">
                     <span class="display-3 mb-5"><i

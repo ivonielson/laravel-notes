@@ -38,7 +38,7 @@ class AuthController extends Controller
             ->first();
 
         if (!$user) {
-            AuditLogger::log('login_fail', 'User', null, null, [
+            AuditLogger::log('login_fail', get_class($user), null, null, [
                 'username' => $username,
                 'status' => 'failed',
                 'reason' => 'user_not_found',
@@ -53,7 +53,7 @@ class AuthController extends Controller
         }
 
         if (!password_verify($password, $user->password)) {
-            AuditLogger::log('login_fail', 'User', $user->id, null, [
+            AuditLogger::log('login_fail', get_class($user), $user->id, null, [
                 'status' => 'failed',
                 'reason' => 'invalid_password',
                 'ip' => $request->ip(),

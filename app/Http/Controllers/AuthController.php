@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Helpers\AuditLogger;
 use App\Services\Operations;
+use App\Http\Requests\Auth\LoginRequest;
+use Illuminate\Http\RedirectResponse;
 
 class AuthController extends Controller
 {
@@ -15,19 +17,19 @@ class AuthController extends Controller
         return view('login');
     }
 
-    public function loginSubmit(Request $request)
+    public function loginSubmit(LoginRequest $request): RedirectResponse
     {
         // form validation
-        $request->validate([
-            'text_username' => 'required|email',
-            'text_password' => 'required|min:6|max:16'
-        ], [
-            'text_username.required' => 'O username é Obrigatório',
-            'text_username.email' => 'Username deve ser um email válido',
-            'text_password.required' => 'O Password é Obrigatório',
-            'text_password.min' => 'O Password deve ter no mínimo :min caracteres',
-            'text_password.max' => 'O Password deve ter no máximo :max caracteres'
-        ]);
+        // $request->validate([
+        //     'text_username' => 'required|email',
+        //     'text_password' => 'required|min:6|max:16'
+        // ], [
+        //     'text_username.required' => 'O username é Obrigatório',
+        //     'text_username.email' => 'Username deve ser um email válido',
+        //     'text_password.required' => 'O Password é Obrigatório',
+        //     'text_password.min' => 'O Password deve ter no mínimo :min caracteres',
+        //     'text_password.max' => 'O Password deve ter no máximo :max caracteres'
+        // ]);
 
         $username = $request->input('text_username');
         $password = $request->input('text_password');

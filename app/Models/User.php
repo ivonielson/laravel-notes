@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
 {
+    use HasFactory;
     // relação com a tabela de notes
     public function notes()
     {

@@ -7,6 +7,8 @@ use App\Services\Operations;
 use App\Helpers\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use App\http\Requests\Auth\RegisterRequest;
+use Illuminate\Http\RedirectResponse;
 
 class RegisterController extends Controller
 {
@@ -41,24 +43,24 @@ class RegisterController extends Controller
         return view('users.register');
     }
 
-    public function registerSubmit(Request $request)
+    public function registerSubmit(RegisterRequest $request): RedirectResponse
     {
-        $request->validate([
-            'text_username' => 'required|email|min:3|max:60|unique:users,username',
-            'text_password' => 'required|min:6|max:16',
-            'text_password_confirmation' => 'required|same:text_password'
-        ], [
-            'text_username.required' => 'O email é obrigatório',
-            'text_username.email' => 'Deve ser um email válido',
-            'text_username.min' => 'O email deve ter no mínimo :min caracteres',
-            'text_username.max' => 'O email deve ter no máximo :max caracteres',
-            'text_username.unique' => 'Este email já está em uso',
-            'text_password.required' => 'A senha é obrigatória',
-            'text_password.min' => 'A senha deve ter no mínimo :min caracteres',
-            'text_password.max' => 'A senha deve ter no máximo :max caracteres',
-            'text_password_confirmation.required' => 'A confirmação de senha é obrigatória',
-            'text_password_confirmation.same' => 'As senhas não coincidem'
-        ]);
+        // $request->validate([
+        //     'text_username' => 'required|email|min:3|max:60|unique:users,username',
+        //     'text_password' => 'required|min:6|max:16',
+        //     'text_password_confirmation' => 'required|same:text_password'
+        // ], [
+        //     'text_username.required' => 'O email é obrigatório',
+        //     'text_username.email' => 'Deve ser um email válido',
+        //     'text_username.min' => 'O email deve ter no mínimo :min caracteres',
+        //     'text_username.max' => 'O email deve ter no máximo :max caracteres',
+        //     'text_username.unique' => 'Este email já está em uso',
+        //     'text_password.required' => 'A senha é obrigatória',
+        //     'text_password.min' => 'A senha deve ter no mínimo :min caracteres',
+        //     'text_password.max' => 'A senha deve ter no máximo :max caracteres',
+        //     'text_password_confirmation.required' => 'A confirmação de senha é obrigatória',
+        //     'text_password_confirmation.same' => 'As senhas não coincidem'
+        // ]);
 
         try {
             $user = new User();
@@ -109,18 +111,18 @@ class RegisterController extends Controller
         }
     }
 
-    public function editUserSubmit(Request $request)
+    public function editUserSubmit(RegisterRequest $request): RedirectResponse
     {
-        $request->validate([
+        // $request->validate([
 
-            'text_password' => 'nullable|min:6|max:16',
-            'text_password_confirmation' => 'nullable|same:text_password'
-        ], [
+        //     'text_password' => 'nullable|min:6|max:16',
+        //     'text_password_confirmation' => 'nullable|same:text_password'
+        // ], [
 
-            'text_password.min' => 'A senha deve ter no mínimo :min caracteres',
-            'text_password.max' => 'A senha deve ter no máximo :max caracteres',
-            'text_password_confirmation.same' => 'As senhas não coincidem'
-        ]);
+        //     'text_password.min' => 'A senha deve ter no mínimo :min caracteres',
+        //     'text_password.max' => 'A senha deve ter no máximo :max caracteres',
+        //     'text_password_confirmation.same' => 'As senhas não coincidem'
+        // ]);
 
         if ($request->user_id == null) {
 

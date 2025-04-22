@@ -6,16 +6,15 @@ use App\Models\Note;
 use App\Models\User;
 use App\Services\Operations;
 use App\Helpers\AuditLogger;
+use App\Http\Requests\notes\NoteRequest;
+
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 
 class MainController extends Controller
 {
     public function index()
     {
-        // Log de acesso à página inicial
-        // AuditLogger::log('view', 'Note', null, null, [
-        //     'description' => 'Acesso à lista de notas'
-        // ]);
 
         // load user notes
         $id = session('user.id');
@@ -37,26 +36,23 @@ class MainController extends Controller
 
     public function newNote()
     {
-        // AuditLogger::log('view_form', 'Note', null, null, [
-        //     'form_type' => 'create'
-        // ]);
 
         return view('note.new_Note');
     }
 
-    public function newNoteSubmit(Request $request)
+    public function newNoteSubmit(NoteRequest $request): RedirectResponse
     {
-        $request->validate([
-            'text_title' => 'required|min:3|max:200',
-            'text_note'  => 'required|min:3|max:3000'
-        ], [
-            'text_title.required' => 'O Note Title é Obrigatório',
-            'text_note.required' => ' O Note Text é Obrigatório',
-            'text_title.min' => 'O Note Title deve ter no mínimo :min caracteres',
-            'text_title.max' => 'O Note Title deve ter no máximo :max caracteres',
-            'text_note.min' => 'O Note Title deve ter no mínimo :min caracteres',
-            'text_note.max' => 'O Note Title deve ter no máximo :max caracteres'
-        ]);
+        // $request->validate([
+        //     'text_title' => 'required|min:3|max:200',
+        //     'text_note'  => 'required|min:3|max:3000'
+        // ], [
+        //     'text_title.required' => 'O Note Title é Obrigatório',
+        //     'text_note.required' => ' O Note Text é Obrigatório',
+        //     'text_title.min' => 'O Note Title deve ter no mínimo :min caracteres',
+        //     'text_title.max' => 'O Note Title deve ter no máximo :max caracteres',
+        //     'text_note.min' => 'O Note Title deve ter no mínimo :min caracteres',
+        //     'text_note.max' => 'O Note Title deve ter no máximo :max caracteres'
+        // ]);
 
         try {
             $note = new Note();
@@ -65,18 +61,10 @@ class MainController extends Controller
             $note->text = $request->text_note;
             $note->save();
 
-            // Log de criação
-            // AuditLogger::logModelAction('create', $note);
-
             return redirect()
                 ->route('home')
                 ->with('success', 'Nota criada com sucesso!');
         } catch (\Exception $e) {
-            // AuditLogger::log('error', 'Note', null, null, [
-            //     'action' => 'create',
-            //     'error' => $e->getMessage()
-            // ]);
-
             return redirect()
                 ->route('home')
                 ->with('error', 'Houve um erro ao criar a nota. Tente novamente.');
@@ -89,79 +77,57 @@ class MainController extends Controller
             $id = Operations::decryptId($id);
             $note = Note::findOrFail($id);
 
-            // Log de visualização para edição
-            // AuditLogger::logView($note, 'edit_form');
-
+            if ($note->user_id !== session('user.id')) {
+                abort(403, 'Você não tem permissão para acessar esta nota.');
+            }
             return view('note.edit_Note', ['note' => $note]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // AuditLogger::log('error', 'Note', $id, null, [
-            //     'action' => 'view_edit',
-            //     'error' => 'Nota não encontrada'
-            // ]);
 
             return response()
                 ->view('errors.404', [], 404);
         } catch (\Exception $e) {
-            // AuditLogger::log('error', 'Note', $id, null, [
-            //     'action' => 'view_edit',
-            //     'error' => $e->getMessage()
-            // ]);
-
             return back()
                 ->with('error', 'Erro ao carregar nota: ' . $e->getMessage());
         }
     }
 
-    public function editNoteSubmit(Request $request)
+    public function editNoteSubmit(NoteRequest $request): RedirectResponse
     {
-        $request->validate([
-            'text_title' => 'required|min:3|max:200',
-            'text_note'  => 'required|min:3|max:3000'
-        ], [
-            'text_title.required' => 'O Note Title é Obrigatório',
-            'text_note.required' => ' O Note Text é Obrigatório',
-            'text_title.min' => 'O Note Title deve ter no mínimo :min caracteres',
-            'text_title.max' => 'O Note Title deve ter no máximo :max caracteres',
-            'text_note.min' => 'O Note Title deve ter no mínimo :min caracteres',
-            'text_note.max' => 'O Note Title deve ter no máximo :max caracteres'
-        ]);
+        // $request->validate([
+        //     'text_title' => 'required|min:3|max:200',
+        //     'text_note'  => 'required|min:3|max:3000'
+        // ], [
+        //     'text_title.required' => 'O Note Title é Obrigatório',
+        //     'text_note.required' => ' O Note Text é Obrigatório',
+        //     'text_title.min' => 'O Note Title deve ter no mínimo :min caracteres',
+        //     'text_title.max' => 'O Note Title deve ter no máximo :max caracteres',
+        //     'text_note.min' => 'O Note Title deve ter no mínimo :min caracteres',
+        //     'text_note.max' => 'O Note Title deve ter no máximo :max caracteres'
+        // ]);
 
         if ($request->note_id == null) {
-            // AuditLogger::log('error', 'Note', null, null, [
-            //     'error' => 'ID da nota não fornecido'
-            // ]);
-
             return redirect()->route('home');
         }
 
         try {
             $id = Operations::decryptId($request->note_id);
-            $note = Note::find($id);
+            $note = Note::findOrFail($id);
 
-            // Guardar valores antigos para o log
+            //  Verifica se o usuário logado é o dono da nota
+            if ($note->user_id !== session('user.id')) {
+                abort(403, 'Você não tem permissão para editar esta nota.');
+            }
+
             $oldValues = $note->getAttributes();
-
-            // Atualizar nota
             $note->title = $request->text_title;
             $note->text = $request->text_note;
             $note->save();
 
-            // Log de atualização
-            // AuditLogger::logModelAction('update', $note, $oldValues);
-
-            return redirect()
-                ->route('home')
-                ->with('success', 'Nota atualizada com sucesso!');
+            return redirect()->route('home')->with('success', 'Nota atualizada com sucesso!');
         } catch (\Exception $e) {
-            // AuditLogger::log('error', 'Note', $id ?? null, null, [
-            //     'action' => 'update',
-            //     'error' => $e->getMessage()
-            // ]);
-
-            return redirect()
-                ->route('home')
-                ->with('error', 'Houve um erro ao atualizar a nota. Tente novamente.');
+            return redirect()->route('home')->with('error', 'Houve um erro ao atualizar a nota. Tente novamente.');
         }
+
     }
 
     public function deleteNote($id)
@@ -169,24 +135,12 @@ class MainController extends Controller
         try {
             $id = Operations::decryptId($id);
             $note = Note::findOrFail($id);
-
-            // Log de visualização para exclusão
-            // AuditLogger::logView($note, 'delete_confirmation');
-
             return view('note.delete_note', compact('note'));
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // AuditLogger::log('error', 'Note', $id, null, [
-            //     'action' => 'view_delete',
-            //     'error' => 'Nota não encontrada'
-            // ]);
 
             return response()
                 ->view('errors.404', [], 404);
         } catch (\Exception $e) {
-            // AuditLogger::log('error', 'Note', $id, null, [
-            //     'action' => 'view_delete',
-            //     'error' => $e->getMessage()
-            // ]);
 
             return back()
                 ->with('error', 'Erro ao carregar nota: ' . $e->getMessage());
@@ -204,18 +158,10 @@ class MainController extends Controller
 
             // Soft delete
             $note->delete();
-
-            // Log de exclusão
-            // AuditLogger::logModelAction('delete', $note, $noteData);
-
             return redirect()
                 ->route('home')
                 ->with('success', 'Nota excluída com sucesso!');
         } catch (\Exception $e) {
-            // AuditLogger::log('error', 'Note', $id, null, [
-            //     'action' => 'delete',
-            //     'error' => $e->getMessage()
-            // ]);
 
             return redirect()
                 ->route('home')

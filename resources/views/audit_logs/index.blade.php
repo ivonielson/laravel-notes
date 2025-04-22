@@ -184,85 +184,87 @@
         </div>
     </div>
 
-    @section('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const ctx = document.getElementById('actionChart').getContext('2d');
 
-                // Preparar dados do gráfico
-                const actionData = @json(
-                    $stats['actions']->map(function ($item) {
-                        return [
-                            'action' => ucfirst($item->action),
-                            'total' => $item->total,
-                        ];
-                    }));
+@endsection
 
-                // Ordenar por total (opcional)
-                actionData.sort((a, b) => b.total - a.total);
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('actionChart').getContext('2d');
 
-                // Cores para as barras
-                const backgroundColors = actionData.map(item => {
-                    switch (item.action.toLowerCase()) {
-                        case 'create':
-                            return 'rgba(40, 167, 69, 0.7)';
-                        case 'update':
-                            return 'rgba(23, 162, 184, 0.7)';
-                        case 'delete':
-                            return 'rgba(220, 53, 69, 0.7)';
-                        default:
-                            return 'rgba(108, 117, 125, 0.7)';
-                    }
-                });
+        // Preparar dados do gráfico
+        const actionData = @json(
+            $stats['actions']->map(function ($item) {
+                return [
+                    'action' => ucfirst($item->action),
+                    'total' => $item->total,
+                ];
+            }));
 
-                const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+        // Ordenar por total (opcional)
+        actionData.sort((a, b) => b.total - a.total);
 
-                // Criar o gráfico
-                new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: actionData.map(item => item.action),
-                        datasets: [{
-                            label: 'Total de Logs',
-                            data: actionData.map(item => item.total),
-                            backgroundColor: backgroundColors,
-                            borderColor: borderColors,
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: {
-                                    precision: 0
-                                }
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return `${context.dataset.label}: ${context.raw}`;
-                                    }
-                                }
-                            },
-                            legend: {
-                                display: false
-                            }
-                        },
-                        onClick: (e, elements) => {
-                            if (elements.length > 0) {
-                                const index = elements[0].index;
-                                const action = actionData[index].action.toLowerCase();
-                                window.location.href = `{{ route('audit_log') }}?action=${action}`;
-                            }
+        // Cores para as barras
+        const backgroundColors = actionData.map(item => {
+            switch (item.action.toLowerCase()) {
+                case 'create':
+                    return 'rgba(40, 167, 69, 0.7)';
+                case 'update':
+                    return 'rgba(23, 162, 184, 0.7)';
+                case 'delete':
+                    return 'rgba(220, 53, 69, 0.7)';
+                default:
+                    return 'rgba(108, 117, 125, 0.7)';
+            }
+        });
+
+        const borderColors = backgroundColors.map(color => color.replace('0.7', '1'));
+
+        // Criar o gráfico
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: actionData.map(item => item.action),
+                datasets: [{
+                    label: 'Total de Logs',
+                    data: actionData.map(item => item.total),
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
                         }
                     }
-                });
-            });
-        </script>
-    @endsection
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw}`;
+                            }
+                        }
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                onClick: (e, elements) => {
+                    if (elements.length > 0) {
+                        const index = elements[0].index;
+                        const action = actionData[index].action.toLowerCase();
+                        window.location.href = `{{ route('audit_log') }}?action=${action}`;
+                    }
+                }
+            }
+        });
+    });
+</script>
 @endsection

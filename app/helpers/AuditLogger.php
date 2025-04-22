@@ -180,30 +180,35 @@ class AuditLogger
      */
     protected static function getClientIp(): string
     {
-        $request = Request::instance();
+        // request()->getClientIp(); atualizar a função para usar o pronto do laravel.
 
-        foreach (
-            [
-                'HTTP_CLIENT_IP',
-                'HTTP_X_FORWARDED_FOR',
-                'HTTP_X_FORWARDED',
-                'HTTP_X_CLUSTER_CLIENT_IP',
-                'HTTP_FORWARDED_FOR',
-                'HTTP_FORWARDED',
-                'REMOTE_ADDR'
-            ] as $key
-        ) {
-            if ($request->server->has($key)) {
-                foreach (explode(',', $request->server->get($key)) as $ip) {
-                    $ip = trim($ip);
-                    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
-                        return $ip;
-                    }
-                }
-            }
-        }
 
-        return $request->getClientIp() ?? '0.0.0.0';
+        // $request = Request::instance();
+
+        // foreach (
+        //     [
+        //         'HTTP_CLIENT_IP',
+        //         'HTTP_X_FORWARDED_FOR',
+        //         'HTTP_X_FORWARDED',
+        //         'HTTP_X_CLUSTER_CLIENT_IP',
+        //         'HTTP_FORWARDED_FOR',
+        //         'HTTP_FORWARDED',
+        //         'REMOTE_ADDR'
+        //     ] as $key
+        // ) {
+        //     if ($request->server->has($key)) {
+        //         foreach (explode(',', $request->server->get($key)) as $ip) {
+        //             $ip = trim($ip);
+        //             if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false) {
+        //                 return $ip;
+        //             }
+        //         }
+        //     }
+        // }
+
+        // return $request->getClientIp() ?? '0.0.0.0';
+        return request()->getClientIp() ?? '0.0.0.0';
+
     }
 
     /**
